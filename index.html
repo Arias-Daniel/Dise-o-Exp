@@ -43,7 +43,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
             border: 5px solid #fff;
             border-radius: 4px;
-            background-color: #ddd; /* Color de fondo del tablero vacío */
+            background-color: #ddd; 
         }
 
         canvas {
@@ -111,27 +111,27 @@
         // CONFIGURACIÓN
         const FILAS = 8;
         const COLUMNAS = 8;
-        const RUTA_IMAGEN = 'foto.jpg'; // Tu imagen
-        const MARGEN_ERROR = 30; // Distancia en px para que la pieza se "pegue" sola
+        const RUTA_IMAGEN = 'foto.jpg'; 
+        const MARGEN_ERROR = 30; 
         
         let piezas = [];
         let anchoPieza, altoPieza;
         let piezaSeleccionada = null;
         let img = new Image();
 
-        // Sonidos (Opcional: puedes quitarlos si no tienes archivos, o usar URLs online)
-        // const audioClick = new Audio('click.mp3'); 
+        // Variable para definir cuánto sobresale la "pestaña" del puzzle
+        let tamanoPestana; 
 
         img.src = RUTA_IMAGEN;
         
         img.onload = function() {
-            // Ajustamos el tamaño del canvas al de la imagen
-            // (Si la imagen es muy grande, podrías escalar aquí)
             canvas.width = img.width;
             canvas.height = img.height;
             
             anchoPieza = img.width / COLUMNAS;
             altoPieza = img.height / FILAS;
+            // El tamaño de la pestaña será el 20% del tamaño de la pieza
+            tamanoPestana = Math.min(anchoPieza, altoPieza) * 0.2;
 
             inicializarPiezas();
             mezclarPiezas();
@@ -140,21 +140,49 @@
 
         function inicializarPiezas() {
             piezas = [];
+            
+            // Paso 1: Definir las formas (pestañas) de cada pieza
+            // shape: [arriba, derecha, abajo, izquierda]
+            // 0: plano, 1: saliente, -1: entrante
+            let formas = []; 
+            for (let i = 0; i < FILAS; i++) {
+                formas[i] = [];
+                for (let j = 0; j < COLUMNAS; j++) {
+                    formas[i][j] = { top: 0, right: 0, bottom: 0, left: 0 };
+                }
+            }
+
+            for (let i = 0; i < FILAS; i++) {
+                for (let j = 0; j < COLUMNAS; j++) {
+                    // Lado derecho (si no es la última columna)
+                    if (j < COLUMNAS - 1) {
+                        let tipo = Math.random() > 0.5 ? 1 : -1;
+                        formas[i][j].right = tipo;
+                        formas[i][j+1].left = -tipo; // La vecina debe ser opuesta
+                    }
+                    // Lado inferior (si no es la última fila)
+                    if (i < FILAS - 1) {
+                        let tipo = Math.random() > 0.5 ? 1 : -1;
+                        formas[i][j].bottom = tipo;
+                        formas[i+1][j].top = -tipo; // La vecina debe ser opuesta
+                    }
+                }
+            }
+
+            // Paso 2: Crear los objetos pieza
             for (let i = 0; i < FILAS; i++) {
                 for (let j = 0; j < COLUMNAS; j++) {
                     piezas.push({
                         filaCorrecta: i,
                         colCorrecta: j,
-                        // Posición destino (donde debe encajar)
                         xCorrecta: j * anchoPieza,
                         yCorrecta: i * altoPieza,
-                        // Estado actual
                         x: 0, 
                         y: 0,
-                        bloqueada: false, // True si ya está encajada
-                        // Recorte de la imagen
+                        bloqueada: false,
                         sx: j * anchoPieza,
-                        sy: i * altoPieza
+                        sy: i * altoPieza,
+                        forma: formas[i][j] // Guardamos la forma calculada
                     });
                 }
             }
@@ -162,70 +190,162 @@
 
         function mezclarPiezas() {
             for (let pieza of piezas) {
-                // Las ponemos en lugares aleatorios
                 pieza.x = Math.random() * (canvas.width - anchoPieza);
                 pieza.y = Math.random() * (canvas.height - altoPieza);
+            }
+        }
+
+        // Función auxiliar para dibujar el contorno de puzzle
+        function trazarContornoPuzzle(ctx, x, y, w, h, forma) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+
+            // Arriba
+            if (forma.top !== 0) {
+                dibujarLado(ctx, x, y, x + w, y, forma.top);
+            } else {
+                ctx.lineTo(x + w, y);
+            }
+
+            // Derecha
+            if (forma.right !== 0) {
+                dibujarLado(ctx, x + w, y, x + w, y + h, forma.right);
+            } else {
+                ctx.lineTo(x + w, y + h);
+            }
+
+            // Abajo
+            if (forma.bottom !== 0) {
+                dibujarLado(ctx, x + w, y + h, x, y + h, forma.bottom);
+            } else {
+                ctx.lineTo(x, y + h);
+            }
+
+            // Izquierda
+            if (forma.left !== 0) {
+                dibujarLado(ctx, x, y + h, x, y, forma.left);
+            } else {
+                ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+        }
+
+        // Función matemática para las curvas Bezier de las pestañas
+        function dibujarLado(ctx, x1, y1, x2, y2, tipo) {
+            const w = x2 - x1;
+            const h = y2 - y1;
+            
+            const cx = (x1 + x2) / 2;
+            const cy = (y1 + y2) / 2;
+            
+            // Dependiendo de si es horizontal o vertical
+            const esHorizontal = Math.abs(w) > Math.abs(h);
+            const s = tipo * tamanoPestana; // Tamaño de la saliente
+
+            if (esHorizontal) {
+                // Curva horizontal
+                const cp1x = x1 + w * 0.35;
+                const cp1y = y1 + s; 
+                
+                // Cuello de la pieza
+                ctx.bezierCurveTo(
+                    x1 + w * 0.4, y1, 
+                    x1 + w * 0.4, y1 + s, 
+                    cx, y1 + s
+                );
+                
+                // Cabeza de la pieza
+                ctx.bezierCurveTo(
+                    x2 - w * 0.4, y2 + s, 
+                    x2 - w * 0.4, y2, 
+                    x2, y2
+                );
+            } else {
+                // Curva vertical
+                ctx.bezierCurveTo(
+                    x1, y1 + h * 0.4, 
+                    x1 + s, y1 + h * 0.4, 
+                    x1 + s, cy
+                );
+                
+                ctx.bezierCurveTo(
+                    x2 + s, y2 - h * 0.4, 
+                    x2, y2 - h * 0.4, 
+                    x2, y2
+                );
             }
         }
 
         function dibujarJuego() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Primero dibujamos una "guía" muy tenue (opcional, ayuda al usuario)
+            // Guía tenue
             ctx.globalAlpha = 0.1;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             ctx.globalAlpha = 1.0;
 
-            // Dibujar piezas
-            // Ordenamos para que la seleccionada siempre esté arriba
             for (let pieza of piezas) {
                 ctx.save();
-                ctx.translate(pieza.x, pieza.y);
+                
+                // Trazamos el camino de recorte
+                trazarContornoPuzzle(ctx, pieza.x, pieza.y, anchoPieza, altoPieza, pieza.forma);
+                
+                // Hacemos el clip para que la imagen tome la forma
+                ctx.clip();
 
-                // Sombra para dar efecto 3D si no está bloqueada
-                if (!pieza.bloqueada) {
-                    ctx.shadowColor = "rgba(0,0,0,0.5)";
-                    ctx.shadowBlur = 4;
-                    ctx.shadowOffsetX = 2;
-                    ctx.shadowOffsetY = 2;
-                }
-
+                // Calculamos cuánto extra de imagen necesitamos para cubrir las pestañas salientes
+                // Expandimos el área de dibujo para asegurar que cubra las pestañas
+                const expansion = tamanoPestana * 1.5;
+                
                 ctx.drawImage(
                     img,
-                    pieza.sx, pieza.sy, anchoPieza, altoPieza,
-                    0, 0, anchoPieza, altoPieza
+                    pieza.sx - expansion, pieza.sy - expansion, 
+                    anchoPieza + (expansion * 2), altoPieza + (expansion * 2),
+                    pieza.x - expansion, pieza.y - expansion, 
+                    anchoPieza + (expansion * 2), altoPieza + (expansion * 2)
                 );
+                
+                ctx.restore();
 
-                // Borde de la pieza
-                ctx.strokeStyle = pieza.bloqueada ? "rgba(0,255,0,0.3)" : "#333"; // Verde suave si está encajada
-                ctx.lineWidth = 1;
-                ctx.strokeRect(0, 0, anchoPieza, altoPieza);
-
+                // Dibujamos el borde encima para que se vea bonito
+                ctx.save();
+                trazarContornoPuzzle(ctx, pieza.x, pieza.y, anchoPieza, altoPieza, pieza.forma);
+                
+                // Borde verde si está bloqueada, gris oscuro si no
+                ctx.strokeStyle = pieza.bloqueada ? "rgba(46, 204, 113, 0.6)" : "#333";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Un poco de sombra para efecto 3D
+                if (!pieza.bloqueada) {
+                   // Simulación simple de sombra dibujando el borde negro transparente desplazado
+                   ctx.strokeStyle = "rgba(0,0,0,0.3)";
+                   ctx.lineWidth = 4;
+                   // No podemos desplazar el stroke fácilmente sin desplazar el path, así que lo dejamos simple
+                }
                 ctx.restore();
             }
         }
 
         function verificarVictoria() {
-            // Revisar si TODAS las piezas están bloqueadas
             const ganaste = piezas.every(p => p.bloqueada);
             if (ganaste) {
-                // Dibujamos la imagen completa limpia
+                // Al ganar, dibujamos la imagen limpia sin cortes
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0);
-                // Mostrar mensaje
                 setTimeout(() => {
                     winMsg.style.display = 'block';
                 }, 200);
             }
         }
 
-        // --- EVENTOS DEL MOUSE ---
+        // --- EVENTOS DEL MOUSE (Idénticos al anterior) ---
 
         canvas.onmousedown = function(e) {
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
 
-            // Buscar pieza clicada (que no esté ya bloqueada)
             for (let i = piezas.length - 1; i >= 0; i--) {
                 let p = piezas[i];
                 if (!p.bloqueada && 
@@ -236,7 +356,6 @@
                     piezaSeleccionada.desfaseX = mouseX - p.x;
                     piezaSeleccionada.desfaseY = mouseY - p.y;
                     
-                    // Traer al frente en el array
                     piezas.splice(i, 1);
                     piezas.push(piezaSeleccionada);
                     
@@ -254,25 +373,21 @@
 
                 piezaSeleccionada.x = mouseX - piezaSeleccionada.desfaseX;
                 piezaSeleccionada.y = mouseY - piezaSeleccionada.desfaseY;
-                
                 dibujarJuego();
             }
         };
 
         canvas.onmouseup = function() {
             if (piezaSeleccionada) {
-                // LÓGICA DE AUTO-ENCAJE (SNAP)
                 const dist = Math.hypot(
                     piezaSeleccionada.x - piezaSeleccionada.xCorrecta,
                     piezaSeleccionada.y - piezaSeleccionada.yCorrecta
                 );
 
                 if (dist < MARGEN_ERROR) {
-                    // Si está cerca, la forzamos a la posición correcta
                     piezaSeleccionada.x = piezaSeleccionada.xCorrecta;
                     piezaSeleccionada.y = piezaSeleccionada.yCorrecta;
                     piezaSeleccionada.bloqueada = true;
-                    // Efecto visual: parpadeo o borde verde (ya está en el draw)
                 }
 
                 piezaSeleccionada = null;
