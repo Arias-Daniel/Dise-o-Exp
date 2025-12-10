@@ -4,29 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Puzzle - Diseño de Experimentos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@400;500&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #34495e;
-            --accent-color: #3498db;
-            --success-color: #27ae60;
-            --text-color: #333;
-            --glass-bg: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.5);
-            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --primary-text: #2d3436;
+            --accent-color: #0984e3;
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
-            /* Fondo elegante con degradado sutil minimalista */
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Poppins', sans-serif;
+            /* Fondo moderno con degradado suave */
+            background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            color: var(--text-color);
+            color: var(--primary-text);
             padding: 20px;
             box-sizing: border-box;
         }
@@ -34,82 +31,94 @@
         /* --- HEADER --- */
         header {
             text-align: center;
-            margin-bottom: 25px;
-            margin-top: 10px;
+            margin-bottom: 30px;
+            /* Efecto vidrio para el título también */
+            background: var(--glass-bg);
+            padding: 15px 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: var(--glass-border);
+            box-shadow: var(--glass-shadow);
         }
 
         h1 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 2.2rem;
+            font-weight: 800;
+            font-size: 2rem;
             margin: 0;
-            color: var(--primary-color);
-            letter-spacing: -0.5px;
+            background: -webkit-linear-gradient(45deg, #0984e3, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .subtitle {
-            font-size: 1.1rem;
-            color: var(--secondary-color);
+            font-size: 1rem;
+            color: #636e72;
             font-weight: 500;
             margin-top: 5px;
-            letter-spacing: 1px;
-            opacity: 0.8;
         }
 
-        /* --- DASHBOARD (Panel de Estadísticas) --- */
+        /* --- DASHBOARD --- */
         .dashboard {
             display: flex;
-            gap: 40px;
+            gap: 50px;
             margin-bottom: 25px;
-            padding: 15px 40px;
-            border-radius: 16px;
+            padding: 15px 50px;
+            border-radius: 20px;
             
-            /* Efecto Glassmorphism */
-            background: var(--glass-bg);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow);
+            /* Glassmorphism fuerte */
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard:hover {
+            transform: translateY(-2px);
         }
 
         .stat-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 100px;
         }
 
         .stat-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            color: #7f8c8d;
-            letter-spacing: 1.5px;
+            color: #b2bec3;
+            letter-spacing: 2px;
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
         }
 
         .stat-value {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 1.6rem;
-            color: var(--primary-color);
-            font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            color: #2d3436;
+            font-weight: 700;
         }
 
         .divider {
-            width: 1px;
-            background: rgba(0,0,0,0.1);
+            width: 2px;
+            background: #dfe6e9;
+            border-radius: 2px;
         }
 
-        /* --- JUEGO (Canvas) --- */
+        /* --- JUEGO --- */
         #game-container {
             position: relative;
-            border-radius: 12px;
-            /* Sombra suave para dar efecto de elevación "flotante" */
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            background-color: #e0e0e0; /* Color de fondo mientras carga */
+            border-radius: 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            background-color: rgba(255,255,255,0.5); 
             line-height: 0;
             overflow: hidden;
             border: 8px solid white;
+            transition: box-shadow 0.3s ease;
         }
 
         canvas {
@@ -117,36 +126,46 @@
             cursor: grab;
             touch-action: none;
         }
+        canvas:active { cursor: grabbing; }
 
-        canvas:active {
-            cursor: grabbing;
-        }
-
-        /* --- FOOTER (Autores) --- */
+        /* --- FOOTER (Nombres) --- */
         footer {
-            margin-top: auto; /* Empuja el footer al fondo si sobra espacio */
-            padding-top: 30px;
+            margin-top: 40px;
+            padding: 20px 40px;
             text-align: center;
-            font-size: 0.9rem;
-            color: var(--secondary-color);
+            
+            background: var(--glass-bg);
+            border-radius: 15px;
+            border: var(--glass-border);
+            box-shadow: var(--glass-shadow);
         }
 
-        .authors {
-            font-weight: 500;
-            margin-bottom: 5px;
+        .authors-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #636e72;
+            margin-bottom: 8px;
         }
 
-        .course-info {
-            font-size: 0.85rem;
-            opacity: 0.7;
+        .authors-names {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #2d3436;
+        }
+        
+        .separator {
+            margin: 0 10px;
+            color: var(--accent-color);
         }
 
-        /* --- MENSAJE VICTORIA --- */
+        /* --- PANTALLA VICTORIA --- */
         #win-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(44, 62, 80, 0.7); /* Oscuro profesional */
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(8px);
             z-index: 100;
             justify-content: center;
@@ -156,40 +175,33 @@
         .win-card {
             background: white;
             padding: 50px;
-            border-radius: 20px;
+            border-radius: 25px;
             text-align: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            max-width: 400px;
-            width: 90%;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            max-width: 90%;
+            width: 350px;
         }
 
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .win-title {
-            color: var(--success-color);
-            margin: 0 0 10px 0;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 2rem;
-        }
+        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         .btn-restart {
             margin-top: 25px;
-            padding: 12px 35px;
-            background: var(--accent-color);
+            padding: 15px 40px;
+            background: linear-gradient(45deg, #0984e3, #6c5ce7);
             color: white;
             border: none;
-            border-radius: 30px;
+            border-radius: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
             font-size: 1rem;
-            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         .btn-restart:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(108, 92, 231, 0.4);
         }
 
     </style>
@@ -198,7 +210,7 @@
 
     <header>
         <h1>Experimento de Armado</h1>
-        <div class="subtitle">Diseño de Experimentos</div>
+        <div class="subtitle">Materia: Diseño de Experimentos</div>
     </header>
 
     <div class="dashboard">
@@ -218,15 +230,17 @@
     </div>
 
     <footer>
-        <div class="authors">Daniel Enrique Arias Montero &bull; Abraham José Gómez Sarmiento</div>
-        <div class="course-info">Ingeniería &bull; 2025</div>
+        <div class="authors-label">Presentado por:</div>
+        <div class="authors-names">
+            Daniel Enrique Arias Montero <span class="separator">|</span> Abraham José Gómez Sarmiento
+        </div>
     </footer>
 
     <div id="win-overlay">
         <div class="win-card">
-            <h2 class="win-title">¡Excelente!</h2>
-            <p style="color: #666; font-size: 1.1rem;">Experimento completado con éxito.</p>
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #eee;">
+            <h2 style="margin:0; font-family:'Montserrat'; color:#00b894; font-size:2.5rem;">¡Excelente!</h2>
+            <p style="color: #636e72; margin-top: 10px;">Experimento completado.</p>
+            <div style="background: #f1f2f6; padding: 15px; border-radius: 12px; margin: 25px 0;">
                 <span class="stat-label">Tiempo Final</span><br>
                 <span class="stat-value" id="final-time">00:00.00</span>
             </div>
@@ -266,8 +280,8 @@
         img.src = RUTA_IMAGEN;
 
         img.onload = function() {
-            // Ajustar canvas para que no sea gigante en pantallas grandes, pero ocupe buen espacio
-            const maxWidth = Math.min(900, window.innerWidth - 40);
+            // Ajuste responsivo un poco más grande
+            const maxWidth = Math.min(950, window.innerWidth - 40);
             escalaGlobal = maxWidth / img.width;
             
             canvas.width = maxWidth;
@@ -279,7 +293,6 @@
             anchoPiezaImg = img.width / COLUMNAS;
             altoPiezaImg = img.height / FILAS;
 
-            // Tamaño de pestaña ajustado
             tamanoPestana = Math.min(anchoPiezaCanvas, altoPiezaCanvas) * 0.25;
 
             inicializarJuego();
@@ -289,7 +302,6 @@
             piezas = [];
             let formas = [];
 
-            // Generar formas coincidentes
             for(let i=0; i<FILAS; i++) {
                 formas[i] = [];
                 for(let j=0; j<COLUMNAS; j++) {
@@ -319,7 +331,6 @@
                         imgY: i * altoPiezaImg,
                         xCorrecta: j * anchoPiezaCanvas,
                         yCorrecta: i * altoPiezaCanvas,
-                        // Esparcir piezas aleatoriamente
                         x: Math.random() * (canvas.width - anchoPiezaCanvas),
                         y: Math.random() * (canvas.height - altoPiezaCanvas),
                         forma: formas[i][j],
@@ -330,7 +341,7 @@
             dibujarEscena();
         }
 
-        // --- FORMA CLÁSICA DE PUZZLE (Bombilla / Llave) ---
+        // --- FORMA CLÁSICA DE PUZZLE ---
         function trazarPieza(ctx, x, y, w, h, forma) {
             ctx.beginPath();
             ctx.moveTo(x, y);
@@ -351,47 +362,34 @@
                 return;
             }
 
-            // Vectores básicos
             const dx = x2 - x1;
             const dy = y2 - y1;
             const len = Math.hypot(dx, dy);
-
-            // Vector Normal (90 grados)
             const nx = dy / len;
             const ny = -dx / len;
-
-            // Tamaño de la oreja
             const s = tipo * tamanoPestana; 
 
-            // Puntos clave para la forma de "Bombilla" clásica
             const xBase1 = x1 + dx * 0.34;
             const yBase1 = y1 + dy * 0.34;
-            
             const xBase2 = x1 + dx * 0.66;
             const yBase2 = y1 + dy * 0.66;
+            const cx = x1 + dx * 0.5;
+            const cy = y1 + dy * 0.5;
 
-            const cx = x1 + dx * 0.5; // Centro X
-            const cy = y1 + dy * 0.5; // Centro Y
-
-            // 1. Hombro izquierdo
             ctx.lineTo(xBase1, yBase1);
 
-            // 2. Curva de subida (lado izquierdo de la oreja)
-            // Se usa Bezier para crear el "cuello" y la parte gorda de la cabeza
             ctx.bezierCurveTo(
-                xBase1 + nx * s * 0.2, yBase1 + ny * s * 0.2, // CP1
-                xBase1 + nx * s * 1.0, yBase1 + ny * s * 1.0, // CP2
-                cx + nx * s * 1.0, cy + ny * s * 1.0 // Cima
+                xBase1 + nx * s * 0.2, yBase1 + ny * s * 0.2, 
+                xBase1 + nx * s * 1.0, yBase1 + ny * s * 1.0, 
+                cx + nx * s * 1.0, cy + ny * s * 1.0 
             );
 
-            // 3. Curva de bajada (lado derecho de la oreja)
             ctx.bezierCurveTo(
-                xBase2 + nx * s * 1.0, yBase2 + ny * s * 1.0, // CP1
-                xBase2 + nx * s * 0.2, yBase2 + ny * s * 0.2, // CP2
-                xBase2, yBase2 // Base derecha
+                xBase2 + nx * s * 1.0, yBase2 + ny * s * 1.0, 
+                xBase2 + nx * s * 0.2, yBase2 + ny * s * 0.2, 
+                xBase2, yBase2 
             );
 
-            // 4. Hombro derecho
             ctx.lineTo(x2, y2);
         }
 
@@ -408,7 +406,6 @@
                 if(p !== piezaSeleccionada) dibujarPieza(p);
             });
 
-            // Pieza seleccionada siempre arriba con sombra pronunciada
             if(piezaSeleccionada) {
                 ctx.shadowColor = "rgba(0,0,0,0.4)";
                 ctx.shadowBlur = 20;
@@ -421,16 +418,16 @@
             }
         }
 
-        // --- RENDERIZADO AVANZADO (Con corrección de espacios blancos) ---
+        // --- RENDERIZADO CON SANGRADO ---
         function dibujarPieza(p) {
             ctx.save();
             ctx.translate(p.x, p.y);
 
-            // 1. Recorte (Shape)
+            // 1. Recorte
             trazarPieza(ctx, 0, 0, anchoPiezaCanvas, altoPiezaCanvas, p.forma);
             ctx.clip();
 
-            // 2. Imagen con Sangrado (Bleed - Solución de bordes blancos)
+            // 2. Imagen con Sangrado
             const margenSeguridad = Math.max(anchoPiezaCanvas, altoPiezaCanvas) * 0.5;
             const margenImg = margenSeguridad / escalaGlobal;
 
@@ -450,12 +447,11 @@
             trazarPieza(ctx, 0, 0, anchoPiezaCanvas, altoPiezaCanvas, p.forma);
             ctx.lineWidth = 1.5;
             if (p.bloqueada) {
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; // Casi invisible si encaja
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; 
                 ctx.stroke();
             } else {
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.9)"; // Blanco brillante si flota
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.9)"; 
                 ctx.stroke();
-                // Sombra interior sutil para volumen
                 ctx.shadowColor = "rgba(0,0,0,0.2)";
                 ctx.shadowBlur = 2;
                 ctx.stroke();
@@ -500,7 +496,6 @@
             
             if(encajadas === totalPiezas) {
                 detenerTimer();
-                // Limpiar y mostrar imagen completa final
                 ctx.clearRect(0,0,canvas.width, canvas.height);
                 ctx.drawImage(img, 0,0, canvas.width, canvas.height);
                 winOverlay.style.display = 'flex';
@@ -524,7 +519,6 @@
                     piezaSeleccionada.offX = mx - p.x;
                     piezaSeleccionada.offY = my - p.y;
                     
-                    // Traer al frente
                     piezas.splice(i, 1);
                     piezas.push(p);
                     
