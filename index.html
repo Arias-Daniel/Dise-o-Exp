@@ -6,194 +6,117 @@
     <title>Puzzle - Diseño de Experimentos</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
-        /* ESTILOS GENERALES */
         :root {
             --primary-color: #2c3e50;
             --accent-color: #3498db;
             --success-color: #27ae60;
-            --text-light: #ecf0f1;
             --bg-color: #eef2f3;
-            --timer-bg: #fff;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
             margin: 0;
             background: var(--bg-color);
             color: #333;
-            user-select: none; /* Evita selección de texto al arrastrar */
+            user-select: none;
+            padding: 20px;
         }
 
-        header {
-            background-color: var(--primary-color);
-            color: var(--text-light);
-            width: 100%;
-            padding: 1rem 0;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
+        header { margin-bottom: 20px; text-align: center; }
+        h1 { margin: 0; color: var(--primary-color); }
 
-        h1 { margin: 0; font-size: 1.8rem; font-weight: 600; letter-spacing: 1px; }
-        h2 { margin: 5px 0 0; font-size: 1rem; font-weight: 300; opacity: 0.9; }
-
-        /* --- NUEVO: PANEL DE ESTADÍSTICAS (CRONÓMETRO) --- */
+        /* --- DASHBOARD --- */
         .dashboard {
             display: flex;
             gap: 20px;
-            margin-bottom: 15px;
-            z-index: 10;
-        }
-
-        .stat-card {
-            background: var(--timer-bg);
-            padding: 10px 25px;
-            border-radius: 50px; /* Bordes redondeados modernos */
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px 30px;
+            border-radius: 50px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
-            border-left: 5px solid var(--accent-color);
-            transition: transform 0.2s;
         }
 
-        .stat-card:hover { transform: translateY(-2px); }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; color: #888; letter-spacing: 1px; }
+        .stat-value { font-family: 'Roboto Mono', monospace; font-size: 1.4rem; color: var(--primary-color); font-weight: bold; }
 
-        .stat-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #7f8c8d;
-            font-weight: bold;
-        }
-
-        .stat-value {
-            font-family: 'Roboto Mono', monospace; /* Fuente tipo digital */
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            font-weight: 600;
-            min-width: 140px; /* Evita que salte al cambiar números */
-            text-align: right;
-        }
-
-        .icon { font-size: 1.2rem; }
-
-        /* --- CONTENEDOR DEL JUEGO --- */
+        /* --- JUEGO --- */
         #game-container {
             position: relative;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
             border: 8px solid #fff;
-            border-radius: 6px;
-            background-color: #bdc3c7; 
-            line-height: 0; /* Elimina espacios extra */
+            border-radius: 4px;
+            background-color: #ddd; 
+            line-height: 0;
+            overflow: hidden; 
         }
 
-        canvas {
-            display: block;
-            cursor: grab;
-        }
+        canvas { display: block; cursor: grab; touch-action: none; }
         canvas:active { cursor: grabbing; }
 
-        footer {
-            margin-top: 30px;
-            font-size: 0.9rem;
-            color: #7f8c8d;
-            text-align: center;
-            padding-bottom: 20px;
-        }
-
-        .credits {
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        /* --- MENSAJE DE VICTORIA --- */
-        #win-message {
-            display: none;
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            color: #333;
-            padding: 40px 60px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            z-index: 100;
-            border-top: 10px solid var(--success-color);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popIn {
-            from { opacity: 0; transform: translate(-50%, -60%) scale(0.9); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        }
-
-        #win-message h1 { color: var(--success-color); margin-bottom: 10px; }
-        
-        .final-time {
-            font-size: 2rem;
-            font-family: 'Roboto Mono', monospace;
-            color: var(--primary-color);
-            margin: 20px 0;
-            display: block;
-            background: #f1f2f6;
-            padding: 10px;
-            border-radius: 8px;
-        }
-
-        button.btn-restart {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1rem;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: background 0.3s;
-            text-transform: uppercase;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-        button.btn-restart:hover { background: #2980b9; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4); }
-
-        /* Overlay oscuro para cuando ganas */
-        #overlay {
+        /* --- MENSAJE VICTORIA --- */
+        #win-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(3px);
-            z-index: 99;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
         }
+
+        .win-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            border-top: 8px solid var(--success-color);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .btn-restart {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-restart:hover { background: #2980b9; transform: scale(1.05); }
+
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Diseño de Experimentos</h1>
-        <h2>Prueba de Habilidad Espacial</h2>
+        <h1>Experimento de Armado</h1>
     </header>
 
     <div class="dashboard">
-        <div class="stat-card">
-            <span class="icon">⏱️</span>
-            <div>
-                <div class="stat-label">Tiempo Transcurrido</div>
-                <div class="stat-value" id="timer">00:00:00</div>
-            </div>
+        <div class="stat-item">
+            <span class="stat-label">Tiempo</span>
+            <span class="stat-value" id="timer">00:00.00</span>
         </div>
-        <div class="stat-card">
-            <span class="icon">🧩</span>
-            <div>
-                <div class="stat-label">Progreso</div>
-                <div class="stat-value" id="progress">0%</div>
-            </div>
+        <div style="width: 1px; background: #ddd; margin: 0 10px;"></div>
+        <div class="stat-item">
+            <span class="stat-label">Piezas</span>
+            <span class="stat-value" id="progress">0 / 64</span>
         </div>
     </div>
 
@@ -201,138 +124,86 @@
         <canvas id="miCanvas"></canvas>
     </div>
 
-    <div id="overlay"></div>
-    <div id="win-message">
-        <h1>¡Experimento Completado!</h1>
-        <p>Has ensamblado el rompecabezas exitosamente.</p>
-        <span class="final-time" id="final-time-display">00:00:00</span>
-        <p>Registra este tiempo en tu tabla de datos.</p>
-        <button class="btn-restart" onclick="location.reload()">Nuevo Intento</button>
+    <div id="win-overlay">
+        <div class="win-card">
+            <h2 style="color: var(--success-color); margin:0;">¡Excelente!</h2>
+            <p>Has completado el experimento.</p>
+            <div style="background: #f4f4f4; padding: 10px; border-radius: 8px; margin: 15px 0;">
+                <span class="stat-value" id="final-time">00:00.00</span>
+            </div>
+            <button class="btn-restart" onclick="location.reload()">Nuevo Intento</button>
+        </div>
     </div>
-
-    <footer>
-        Desarrollado por:<br>
-        <span class="credits">Daniel Enrique Arias Montero & Abraham José Gómez Sarmiento</span>
-    </footer>
 
     <script>
         const canvas = document.getElementById('miCanvas');
         const ctx = canvas.getContext('2d');
-        const winMsg = document.getElementById('win-message');
-        const overlay = document.getElementById('overlay');
         const timerDisplay = document.getElementById('timer');
-        const finalTimeDisplay = document.getElementById('final-time-display');
         const progressDisplay = document.getElementById('progress');
-        
-        // CONFIGURACIÓN
+        const winOverlay = document.getElementById('win-overlay');
+        const finalTimeDisplay = document.getElementById('final-time');
+
+        // --- CONFIGURACIÓN ---
         const FILAS = 8;
         const COLUMNAS = 8;
-        const TOTAL_PIEZAS = FILAS * COLUMNAS;
-        const RUTA_IMAGEN = 'foto.jpg'; // Asegúrate de tener esta imagen
-        const MARGEN_ERROR = 25; 
+        const RUTA_IMAGEN = 'foto.jpg'; 
+        const MARGEN_ERROR = 35; 
         
-        let piezas = [];
-        let anchoPieza, altoPieza;
-        let piezaSeleccionada = null;
         let img = new Image();
-        let tamanoPestana; 
-
-        // VARIABLES DEL CRONÓMETRO
-        let tiempoInicio = 0;
-        let intervaloTimer = null;
-        let cronometroAndando = false;
-        let tiempoFinal = "";
+        let piezas = [];
+        let anchoPiezaCanvas, altoPiezaCanvas;
+        let anchoPiezaImg, altoPiezaImg;
+        let piezaSeleccionada = null;
+        let tamanoPestana;
+        let escalaGlobal; 
+        
+        // Variables Timer
+        let startTime = 0;
+        let timerInterval;
+        let running = false;
+        let totalPiezas = FILAS * COLUMNAS;
 
         img.src = RUTA_IMAGEN;
-        
-        img.onload = function() {
-            // Ajustar canvas al tamaño de imagen (máximo de pantalla razonable)
-            let scale = 1;
-            if (img.width > 800) scale = 800 / img.width;
-            
-            canvas.width = img.width * scale;
-            canvas.height = img.height * scale;
-            
-            // Dibujamos la imagen escalada internamente si es necesario
-            // Para simplificar, asumimos que el cálculo de piezas se basa en el canvas
-            anchoPieza = canvas.width / COLUMNAS;
-            altoPieza = canvas.height / FILAS;
-            tamanoPestana = Math.min(anchoPieza, altoPieza) * 0.2;
 
-            inicializarPiezas(scale);
-            mezclarPiezas();
-            dibujarJuego();
+        img.onload = function() {
+            const maxWidth = Math.min(800, window.innerWidth - 40);
+            escalaGlobal = maxWidth / img.width;
+            
+            canvas.width = maxWidth;
+            canvas.height = img.height * escalaGlobal;
+
+            anchoPiezaCanvas = canvas.width / COLUMNAS;
+            altoPiezaCanvas = canvas.height / FILAS;
+            
+            anchoPiezaImg = img.width / COLUMNAS;
+            altoPiezaImg = img.height / FILAS;
+
+            // Tamaño de la pestaña (la oreja)
+            tamanoPestana = Math.min(anchoPiezaCanvas, altoPiezaCanvas) * 0.25;
+
+            inicializarJuego();
         };
 
-        // LÓGICA DEL CRONÓMETRO
-        function formatearTiempo(ms) {
-            let totalSegundos = Math.floor(ms / 1000);
-            let minutos = Math.floor(totalSegundos / 60);
-            let segundos = totalSegundos % 60;
-            let centesimas = Math.floor((ms % 1000) / 10); // Mostramos centésimas para look científico
-
-            return `${pad(minutos)}:${pad(segundos)}:${pad(centesimas)}`;
-        }
-
-        function pad(num) {
-            return num.toString().padStart(2, '0');
-        }
-
-        function iniciarCronometro() {
-            if (!cronometroAndando) {
-                tiempoInicio = Date.now();
-                cronometroAndando = true;
-                // Actualizar cada 30ms para efecto visual fluido
-                intervaloTimer = setInterval(() => {
-                    const ahora = Date.now();
-                    const diferencia = ahora - tiempoInicio;
-                    timerDisplay.textContent = formatearTiempo(diferencia);
-                }, 30);
-                
-                // Efecto visual: borde azul al iniciar
-                document.querySelector('.stat-card').style.borderLeftColor = "#e74c3c"; // Rojo indicando grabación
-            }
-        }
-
-        function detenerCronometro() {
-            if (cronometroAndando) {
-                clearInterval(intervaloTimer);
-                cronometroAndando = false;
-                // Guardar tiempo final exacto
-                const diferencia = Date.now() - tiempoInicio;
-                tiempoFinal = formatearTiempo(diferencia);
-                timerDisplay.textContent = tiempoFinal;
-                document.querySelector('.stat-card').style.borderLeftColor = "#27ae60"; // Verde al finalizar
-            }
-        }
-
-        function actualizarProgreso() {
-            const colocadas = piezas.filter(p => p.bloqueada).length;
-            const porcentaje = Math.round((colocadas / TOTAL_PIEZAS) * 100);
-            progressDisplay.textContent = porcentaje + "%";
-        }
-
-        // LÓGICA DEL JUEGO
-        function inicializarPiezas(scale) {
+        function inicializarJuego() {
             piezas = [];
-            let formas = []; 
-            
-            // Generar formas aleatorias
-            for (let i = 0; i < FILAS; i++) {
+            let formas = [];
+
+            // Generar formas coincidentes
+            for(let i=0; i<FILAS; i++) {
                 formas[i] = [];
-                for (let j = 0; j < COLUMNAS; j++) {
+                for(let j=0; j<COLUMNAS; j++) {
                     formas[i][j] = { top: 0, right: 0, bottom: 0, left: 0 };
                 }
             }
 
-            for (let i = 0; i < FILAS; i++) {
-                for (let j = 0; j < COLUMNAS; j++) {
-                    if (j < COLUMNAS - 1) {
+            for(let i=0; i<FILAS; i++) {
+                for(let j=0; j<COLUMNAS; j++) {
+                    if(j < COLUMNAS-1) {
                         let tipo = Math.random() > 0.5 ? 1 : -1;
                         formas[i][j].right = tipo;
                         formas[i][j+1].left = -tipo;
                     }
-                    if (i < FILAS - 1) {
+                    if(i < FILAS-1) {
                         let tipo = Math.random() > 0.5 ? 1 : -1;
                         formas[i][j].bottom = tipo;
                         formas[i+1][j].top = -tipo;
@@ -340,203 +211,262 @@
                 }
             }
 
-            for (let i = 0; i < FILAS; i++) {
-                for (let j = 0; j < COLUMNAS; j++) {
+            for(let i=0; i<FILAS; i++) {
+                for(let j=0; j<COLUMNAS; j++) {
                     piezas.push({
-                        filaCorrecta: i,
-                        colCorrecta: j,
-                        xCorrecta: j * anchoPieza,
-                        yCorrecta: i * altoPieza,
-                        x: 0, y: 0,
-                        bloqueada: false,
-                        sx: (j * anchoPieza) / scale, // Coordenada origen en imagen real
-                        sy: (i * altoPieza) / scale,
-                        sw: (anchoPieza) / scale,
-                        sh: (altoPieza) / scale,
-                        forma: formas[i][j]
+                        imgX: j * anchoPiezaImg,
+                        imgY: i * altoPiezaImg,
+                        xCorrecta: j * anchoPiezaCanvas,
+                        yCorrecta: i * altoPiezaCanvas,
+                        x: Math.random() * (canvas.width - anchoPiezaCanvas),
+                        y: Math.random() * (canvas.height - altoPiezaCanvas),
+                        forma: formas[i][j],
+                        bloqueada: false
                     });
                 }
             }
+            dibujarEscena();
         }
 
-        function mezclarPiezas() {
-            for (let pieza of piezas) {
-                pieza.x = Math.random() * (canvas.width - anchoPieza);
-                pieza.y = Math.random() * (canvas.height - altoPieza);
-            }
-        }
-
-        function trazarContornoPuzzle(ctx, x, y, w, h, forma) {
+        // --- NUEVA LÓGICA GEOMÉTRICA (SOLUCIÓN A LOS HUECOS) ---
+        // Usamos vectores normalizados para garantizar que la curva sea idéntica
+        // sin importar si se dibuja de arriba-abajo o abajo-arriba.
+        
+        function trazarPieza(ctx, x, y, w, h, forma) {
             ctx.beginPath();
             ctx.moveTo(x, y);
-            // Top
-            forma.top !== 0 ? dibujarLado(ctx, x, y, x + w, y, forma.top) : ctx.lineTo(x + w, y);
-            // Right
-            forma.right !== 0 ? dibujarLado(ctx, x + w, y, x + w, y + h, forma.right) : ctx.lineTo(x + w, y + h);
-            // Bottom
-            forma.bottom !== 0 ? dibujarLado(ctx, x + w, y + h, x, y + h, forma.bottom) : ctx.lineTo(x, y + h);
-            // Left
-            forma.left !== 0 ? dibujarLado(ctx, x, y + h, x, y, forma.left) : ctx.lineTo(x, y);
+            // Top (Izq -> Der)
+            dibujarLadoVectorial(ctx, x, y, x + w, y, forma.top);
+            // Right (Arr -> Aba)
+            dibujarLadoVectorial(ctx, x + w, y, x + w, y + h, forma.right);
+            // Bottom (Der -> Izq)
+            dibujarLadoVectorial(ctx, x + w, y + h, x, y + h, forma.bottom);
+            // Left (Aba -> Arr)
+            dibujarLadoVectorial(ctx, x, y + h, x, y, forma.left);
             ctx.closePath();
         }
 
-        function dibujarLado(ctx, x1, y1, x2, y2, tipo) {
-            const w = x2 - x1;
-            const h = y2 - y1;
-            const cx = (x1 + x2) / 2;
-            const cy = (y1 + y2) / 2;
-            const esHorizontal = Math.abs(w) > Math.abs(h);
+        function dibujarLadoVectorial(ctx, x1, y1, x2, y2, tipo) {
+            if (tipo === 0) {
+                ctx.lineTo(x2, y2);
+                return;
+            }
+
+            // Cálculo vectorial para rotación perfecta
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+
+            // Vector Normal (90 grados hacia afuera del sentido de las agujas del reloj)
+            // Esto apunta "hacia afuera" de la pieza.
+            const nx = dy / len;
+            const ny = -dx / len;
+
             const s = tipo * tamanoPestana; 
 
-            if (esHorizontal) {
-                ctx.bezierCurveTo(x1 + w * 0.4, y1, x1 + w * 0.4, y1 + s, cx, y1 + s);
-                ctx.bezierCurveTo(x2 - w * 0.4, y2 + s, x2 - w * 0.4, y2, x2, y2);
-            } else {
-                ctx.bezierCurveTo(x1, y1 + h * 0.4, x1 + s, y1 + h * 0.4, x1 + s, cy);
-                ctx.bezierCurveTo(x2 + s, y2 - h * 0.4, x2, y2 - h * 0.4, x2, y2);
-            }
+            // Puntos de control basados en porcentajes del lado
+            // Esto crea una forma de "Oreja" estándar simétrica
+            
+            // Curva 1: Salida del cuello
+            ctx.bezierCurveTo(
+                x1 + dx * 0.2 + nx * s * 0.2, y1 + dy * 0.2 + ny * s * 0.2,
+                x1 + dx * 0.2 + nx * s * 1.0, y1 + dy * 0.2 + ny * s * 1.0,
+                x1 + dx * 0.35 + nx * s * 1.0, y1 + dy * 0.35 + ny * s * 1.0
+            );
+
+            // Curva 2: Cabeza de la pestaña
+            ctx.bezierCurveTo(
+                x1 + dx * 0.45 + nx * s * 1.0, y1 + dy * 0.45 + ny * s * 1.0,
+                x1 + dx * 0.55 + nx * s * 1.0, y1 + dy * 0.55 + ny * s * 1.0,
+                x1 + dx * 0.65 + nx * s * 1.0, y1 + dy * 0.65 + ny * s * 1.0
+            );
+
+            // Curva 3: Regreso del cuello
+            ctx.bezierCurveTo(
+                x1 + dx * 0.8 + nx * s * 1.0, y1 + dy * 0.8 + ny * s * 1.0,
+                x1 + dx * 0.8 + nx * s * 0.2, y1 + dy * 0.8 + ny * s * 0.2,
+                x2, y2
+            );
         }
 
-        function dibujarJuego() {
+        function dibujarEscena() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Fondo tenue
             ctx.save();
             ctx.globalAlpha = 0.15;
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             ctx.restore();
 
-            // Dibujar primero las piezas NO seleccionadas
-            for (let pieza of piezas) {
-                if (pieza === piezaSeleccionada) continue;
-                dibujarPiezaIndividual(pieza);
-            }
+            piezas.forEach(p => {
+                if(p !== piezaSeleccionada) dibujarPieza(p);
+            });
 
-            // Dibujar la pieza seleccionada AL FINAL (encima de todas)
-            if (piezaSeleccionada) {
-                // Sombra de elevación
-                ctx.save();
+            if(piezaSeleccionada) {
                 ctx.shadowColor = "rgba(0,0,0,0.5)";
                 ctx.shadowBlur = 15;
                 ctx.shadowOffsetX = 5;
                 ctx.shadowOffsetY = 5;
-                dibujarPiezaIndividual(piezaSeleccionada);
-                ctx.restore();
+                dibujarPieza(piezaSeleccionada);
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
             }
         }
 
-        function dibujarPiezaIndividual(pieza) {
+        // --- RENDERIZADO AVANZADO ---
+        function dibujarPieza(p) {
             ctx.save();
-            trazarContornoPuzzle(ctx, pieza.x, pieza.y, anchoPieza, altoPieza, pieza.forma);
+            ctx.translate(p.x, p.y);
+
+            // 1. Recorte (Shape)
+            trazarPieza(ctx, 0, 0, anchoPiezaCanvas, altoPiezaCanvas, p.forma);
             ctx.clip();
-            
-            // Dibujar la parte de la imagen correspondiente
-            // Usamos las coordenadas originales de la imagen (sx, sy) escaladas al canvas
-            const expansion = tamanoPestana * 1.5;
-            const ratioW = img.width / canvas.width;
-            const ratioH = img.height / canvas.height;
 
-            ctx.drawImage(
-                img,
-                (pieza.xCorrecta * ratioW) - (expansion * ratioW), 
-                (pieza.yCorrecta * ratioH) - (expansion * ratioH),
-                (anchoPieza * ratioW) + (expansion * ratioW * 2), 
-                (altoPieza * ratioH) + (expansion * ratioH * 2),
-                pieza.x - expansion, 
-                pieza.y - expansion,
-                anchoPieza + (expansion * 2), 
-                altoPieza + (expansion * 2)
-            );
-            ctx.restore();
+            // 2. Imagen con Sangrado (Bleed)
+            // Un sangrado grande asegura que la imagen cubra toda la pestaña
+            const margenSeguridad = Math.max(anchoPiezaCanvas, altoPiezaCanvas) * 0.5;
+            const margenImg = margenSeguridad / escalaGlobal;
 
-            // Borde
-            ctx.save();
-            trazarContornoPuzzle(ctx, pieza.x, pieza.y, anchoPieza, altoPieza, pieza.forma);
-            ctx.strokeStyle = pieza.bloqueada ? "#27ae60" : "rgba(255,255,255,0.8)";
-            ctx.lineWidth = pieza.bloqueada ? 1 : 2;
-            ctx.stroke();
+            let sx = p.imgX - margenImg;
+            let sy = p.imgY - margenImg;
+            let sw = anchoPiezaImg + (margenImg * 2);
+            let sh = altoPiezaImg + (margenImg * 2);
+
+            let dx = -margenSeguridad;
+            let dy = -margenSeguridad;
+            let dw = anchoPiezaCanvas + (margenSeguridad * 2);
+            let dh = altoPiezaCanvas + (margenSeguridad * 2);
+
+            ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+
+            // 3. Bordes
+            trazarPieza(ctx, 0, 0, anchoPiezaCanvas, altoPiezaCanvas, p.forma);
+            ctx.lineWidth = 1.5;
+            if (p.bloqueada) {
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+                ctx.stroke();
+            } else {
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+                ctx.stroke();
+                ctx.shadowColor = "rgba(0,0,0,0.2)";
+                ctx.shadowBlur = 2;
+                ctx.stroke();
+                ctx.shadowColor = "transparent";
+            }
+
             ctx.restore();
         }
 
-        function verificarVictoria() {
-            actualizarProgreso();
-            const ganaste = piezas.every(p => p.bloqueada);
-            if (ganaste) {
-                detenerCronometro(); // DETENER TIEMPO
-                
-                // Animación final
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Mostrar overlay y mensaje
-                overlay.style.display = 'block';
-                winMsg.style.display = 'block';
-                finalTimeDisplay.textContent = tiempoFinal;
+        // --- FUNCIONES DE JUEGO ---
+        function empezarTimer() {
+            if(!running) {
+                running = true;
+                startTime = Date.now();
+                timerInterval = setInterval(() => {
+                    let delta = Date.now() - startTime;
+                    timerDisplay.textContent = formatearTiempo(delta);
+                }, 50);
             }
         }
 
-        // EVENTOS MOUSE
+        function detenerTimer() {
+            running = false;
+            clearInterval(timerInterval);
+            let final = formatearTiempo(Date.now() - startTime);
+            finalTimeDisplay.textContent = final;
+            return final;
+        }
+
+        function formatearTiempo(ms) {
+            let s = Math.floor(ms / 1000);
+            let m = Math.floor(s / 60);
+            let cs = Math.floor((ms % 1000) / 10);
+            s = s % 60;
+            return `${pad(m)}:${pad(s)}.${pad(cs)}`;
+        }
+        function pad(n) { return n < 10 ? '0'+n : n; }
+
+        function checkVictoria() {
+            const encajadas = piezas.filter(p => p.bloqueada).length;
+            progressDisplay.textContent = `${encajadas} / ${totalPiezas}`;
+            
+            if(encajadas === totalPiezas) {
+                detenerTimer();
+                ctx.clearRect(0,0,canvas.width, canvas.height);
+                ctx.drawImage(img, 0,0, canvas.width, canvas.height);
+                winOverlay.style.display = 'flex';
+            }
+        }
+
+        // Eventos Mouse
         canvas.onmousedown = function(e) {
-            // INICIAR CRONÓMETRO AL PRIMER CLIC
-            iniciarCronometro();
-
+            empezarTimer();
             const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
 
-            // Buscar pieza (reverso para agarrar la que está visualmente arriba)
-            for (let i = piezas.length - 1; i >= 0; i--) {
+            for(let i=piezas.length-1; i>=0; i--) {
                 let p = piezas[i];
-                if (!p.bloqueada && 
-                    mouseX > p.x && mouseX < p.x + anchoPieza &&
-                    mouseY > p.y && mouseY < p.y + altoPieza) {
+                if(!p.bloqueada && 
+                   mx > p.x && mx < p.x + anchoPiezaCanvas && 
+                   my > p.y && my < p.y + altoPiezaCanvas) {
                     
                     piezaSeleccionada = p;
-                    piezaSeleccionada.desfaseX = mouseX - p.x;
-                    piezaSeleccionada.desfaseY = mouseY - p.y;
+                    piezaSeleccionada.offX = mx - p.x;
+                    piezaSeleccionada.offY = my - p.y;
                     
-                    // Mover al final del array para que se dibuje última (encima)
                     piezas.splice(i, 1);
-                    piezas.push(piezaSeleccionada);
+                    piezas.push(p);
                     
-                    dibujarJuego();
+                    dibujarEscena();
                     return;
                 }
             }
         };
 
         canvas.onmousemove = function(e) {
-            if (piezaSeleccionada) {
+            if(piezaSeleccionada) {
                 const rect = canvas.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
-
-                piezaSeleccionada.x = mouseX - piezaSeleccionada.desfaseX;
-                piezaSeleccionada.y = mouseY - piezaSeleccionada.desfaseY;
-                dibujarJuego();
+                piezaSeleccionada.x = (e.clientX - rect.left) - piezaSeleccionada.offX;
+                piezaSeleccionada.y = (e.clientY - rect.top) - piezaSeleccionada.offY;
+                dibujarEscena();
             }
         };
 
         canvas.onmouseup = function() {
-            if (piezaSeleccionada) {
-                const dist = Math.hypot(
-                    piezaSeleccionada.x - piezaSeleccionada.xCorrecta,
-                    piezaSeleccionada.y - piezaSeleccionada.yCorrecta
-                );
-
-                if (dist < MARGEN_ERROR) {
+            if(piezaSeleccionada) {
+                const dist = Math.hypot(piezaSeleccionada.x - piezaSeleccionada.xCorrecta, piezaSeleccionada.y - piezaSeleccionada.yCorrecta);
+                if(dist < MARGEN_ERROR) {
                     piezaSeleccionada.x = piezaSeleccionada.xCorrecta;
                     piezaSeleccionada.y = piezaSeleccionada.yCorrecta;
                     piezaSeleccionada.bloqueada = true;
-                    // Sonido de encaje opcional
-                    // new Audio('click.mp3').play().catch(e=>{}); 
                 }
-
                 piezaSeleccionada = null;
-                dibujarJuego();
-                verificarVictoria();
+                dibujarEscena();
+                checkVictoria();
             }
         };
+
+        // Soporte Táctil
+        canvas.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', { clientX: touch.clientX, clientY: touch.clientY });
+            canvas.dispatchEvent(mouseEvent);
+        }, {passive: false});
+
+        canvas.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', { clientX: touch.clientX, clientY: touch.clientY });
+            canvas.dispatchEvent(mouseEvent);
+        }, {passive: false});
+
+        canvas.addEventListener('touchend', function(e) {
+            const mouseEvent = new MouseEvent('mouseup', {});
+            canvas.dispatchEvent(mouseEvent);
+        });
+
     </script>
 </body>
 </html>
