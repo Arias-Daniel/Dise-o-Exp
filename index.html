@@ -178,7 +178,7 @@
             anchoPiezaImg = img.width / COLUMNAS;
             altoPiezaImg = img.height / FILAS;
 
-            // Tamaño de la pestaña (la oreja)
+            // Tamaño de la pestaña ajustado para que se vea bien
             tamanoPestana = Math.min(anchoPiezaCanvas, altoPiezaCanvas) * 0.25;
 
             inicializarJuego();
@@ -228,10 +228,7 @@
             dibujarEscena();
         }
 
-        // --- NUEVA LÓGICA GEOMÉTRICA (SOLUCIÓN A LOS HUECOS) ---
-        // Usamos vectores normalizados para garantizar que la curva sea idéntica
-        // sin importar si se dibuja de arriba-abajo o abajo-arriba.
-        
+        // --- FORMA CLÁSICA DE PUZZLE ---
         function trazarPieza(ctx, x, y, w, h, forma) {
             ctx.beginPath();
             ctx.moveTo(x, y);
@@ -252,41 +249,49 @@
                 return;
             }
 
-            // Cálculo vectorial para rotación perfecta
+            // Vectores básicos
             const dx = x2 - x1;
             const dy = y2 - y1;
             const len = Math.hypot(dx, dy);
 
-            // Vector Normal (90 grados hacia afuera del sentido de las agujas del reloj)
-            // Esto apunta "hacia afuera" de la pieza.
+            // Vector Normal (90 grados)
             const nx = dy / len;
             const ny = -dx / len;
 
+            // Tamaño de la oreja
             const s = tipo * tamanoPestana; 
 
-            // Puntos de control basados en porcentajes del lado
-            // Esto crea una forma de "Oreja" estándar simétrica
+            // Puntos clave para la forma de "Bombilla" clásica
+            const xBase1 = x1 + dx * 0.34;
+            const yBase1 = y1 + dy * 0.34;
             
-            // Curva 1: Salida del cuello
+            const xBase2 = x1 + dx * 0.66;
+            const yBase2 = y1 + dy * 0.66;
+
+            const cx = x1 + dx * 0.5; // Centro X
+            const cy = y1 + dy * 0.5; // Centro Y
+
+            // 1. Hombro izquierdo
+            ctx.lineTo(xBase1, yBase1);
+
+            // 2. Curva de subida (lado izquierdo de la oreja)
+            // Se usa Bezier para crear el "cuello" y la parte gorda de la cabeza
             ctx.bezierCurveTo(
-                x1 + dx * 0.2 + nx * s * 0.2, y1 + dy * 0.2 + ny * s * 0.2,
-                x1 + dx * 0.2 + nx * s * 1.0, y1 + dy * 0.2 + ny * s * 1.0,
-                x1 + dx * 0.35 + nx * s * 1.0, y1 + dy * 0.35 + ny * s * 1.0
+                xBase1 + nx * s * 0.2, yBase1 + ny * s * 0.2, // CP1: Salida suave
+                xBase1 + nx * s * 1.0, yBase1 + ny * s * 1.0, // CP2: Hombro de la bombilla
+                cx + nx * s * 1.0, cy + ny * s * 1.0 // Punto Medio Alto (Cima)
             );
 
-            // Curva 2: Cabeza de la pestaña
+            // 3. Curva de bajada (lado derecho de la oreja)
+            // Simétrica a la anterior
             ctx.bezierCurveTo(
-                x1 + dx * 0.45 + nx * s * 1.0, y1 + dy * 0.45 + ny * s * 1.0,
-                x1 + dx * 0.55 + nx * s * 1.0, y1 + dy * 0.55 + ny * s * 1.0,
-                x1 + dx * 0.65 + nx * s * 1.0, y1 + dy * 0.65 + ny * s * 1.0
+                xBase2 + nx * s * 1.0, yBase2 + ny * s * 1.0, // CP1: Hombro derecho bombilla
+                xBase2 + nx * s * 0.2, yBase2 + ny * s * 0.2, // CP2: Entrada suave
+                xBase2, yBase2 // Destino: Base derecha
             );
 
-            // Curva 3: Regreso del cuello
-            ctx.bezierCurveTo(
-                x1 + dx * 0.8 + nx * s * 1.0, y1 + dy * 0.8 + ny * s * 1.0,
-                x1 + dx * 0.8 + nx * s * 0.2, y1 + dy * 0.8 + ny * s * 0.2,
-                x2, y2
-            );
+            // 4. Hombro derecho
+            ctx.lineTo(x2, y2);
         }
 
         function dibujarEscena() {
@@ -313,7 +318,7 @@
             }
         }
 
-        // --- RENDERIZADO AVANZADO ---
+        // --- RENDERIZADO AVANZADO (Con Sangrado) ---
         function dibujarPieza(p) {
             ctx.save();
             ctx.translate(p.x, p.y);
@@ -323,7 +328,6 @@
             ctx.clip();
 
             // 2. Imagen con Sangrado (Bleed)
-            // Un sangrado grande asegura que la imagen cubra toda la pestaña
             const margenSeguridad = Math.max(anchoPiezaCanvas, altoPiezaCanvas) * 0.5;
             const margenImg = margenSeguridad / escalaGlobal;
 
